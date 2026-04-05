@@ -9,7 +9,7 @@ Minify for Laravel is a package for minifying and obfuscating Javascript, CSS, H
 <p align="left">
 <a href="https://packagist.org/packages/brito101/laravel-minify"><img src="https://img.shields.io/packagist/v/brito101/laravel-minify" alt="Latest Stable Version"></a>
 <a href="https://packagist.org/packages/brito101/laravel-minify"><img src="https://img.shields.io/packagist/dt/brito101/laravel-minify" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/brito101/laravel-minify"><img src="https://img.shields.io/packagist/l/brito101/laravel-minify" alt="License"></a>
+<a href="https://github.com/brito101/laravel-minify/blob/main/LICENSE"><img src="https://img.shields.io/github/license/brito101/laravel-minify" alt="License"></a>
 </p>
 
 ## Comparison
