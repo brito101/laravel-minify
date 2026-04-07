@@ -14,9 +14,6 @@ Minify for Laravel is a package for minifying and obfuscating Javascript, CSS, H
 
 ## Comparison
 
-This image shows the difference in size between the original file and the minified file of default welcome.blade.php Laravel. The original file size is 28.7 KB and the minified file size is 25.7 KB. The minified file size is 10% smaller than the original file size.
-
-
 If you minify all your asset files, you can save up to 50% of your bandwidth. This will make your website load faster and save your hosting cost. When you have big files, the difference in size will be even greater.
 
 ## Installation
