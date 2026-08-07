@@ -136,6 +136,15 @@ When enabled, scripts like this will not be minified:
 </script>
 ```
 
+### Preserve Whitespace Tags
+Line breaks inside `<textarea>` and `<pre>` are meaningful: collapsing them changes the value the user reads back and submits. Minify for Laravel automatically preserves the content of these tags. You can customize which tags are preserved by setting `preserve_whitespace_tags` in the `config/minify.php` file. For example:
+
+```php
+"preserve_whitespace_tags" => ['textarea', 'pre'],
+```
+
+Set it to an empty array to restore the previous behavior.
+
 ### Skip Minify on Blade
 You can skip minify on blade by using attribute `ignore--minify` inside script or style tag. For example:
 

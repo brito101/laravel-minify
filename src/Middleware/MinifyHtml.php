@@ -6,6 +6,8 @@ class MinifyHtml extends Minifier
 {
     protected const REGEX_REMOVE_COMMENT = "#\s*<!--(?!\[if\s).*?-->\s*|(?<!\>)\n+(?=\<[^!])#s";
 
+    protected const PLACEHOLDER_FORMAT = '__MINIFY_PRESERVED_%d__';
+
     protected function apply()
     {
         $ignoredCss = $this->getByTagOnlyIgnored('style');
@@ -67,6 +69,12 @@ class MinifyHtml extends Minifier
 
     protected function replace($value)
     {
+        // The last rule below collapses every run of whitespace into a single
+        // space over the whole document. Inside <textarea> and <pre> the line
+        // breaks are meaningful, so their content is masked out beforehand and
+        // restored untouched at the end.
+        [$value, $preserved] = $this->maskWhitespaceSensitiveTags($value);
+
         $value = trim(preg_replace([
             // t = text
             // o = tag open
@@ -105,8 +113,44 @@ class MinifyHtml extends Minifier
 
         $allowRemoveComments = (bool) config('minify.remove_comments', true);
 
-        return $allowRemoveComments == false
+        $value = $allowRemoveComments == false
             ? $value
             : $this->removeComment($value);
+
+        return empty($preserved) ? $value : strtr($value, $preserved);
+    }
+
+    /**
+     * Swap the content of whitespace sensitive tags for placeholders that
+     * carry no whitespace, so the minification rules cannot reach it.
+     *
+     * @param string $value
+     *
+     * @return array{0: string, 1: array<string, string>}
+     */
+    protected function maskWhitespaceSensitiveTags($value): array
+    {
+        $tags = array_filter((array) config('minify.preserve_whitespace_tags', ['textarea', 'pre']));
+
+        if (empty($tags)) {
+            return [$value, []];
+        }
+
+        $names = implode('|', array_map(fn ($tag) => preg_quote((string) $tag, '#'), $tags));
+
+        $preserved = [];
+
+        $value = preg_replace_callback(
+            '#<('.$names.')\b[^>]*>.*?</\1\s*>#is',
+            function (array $matches) use (&$preserved) {
+                $key = sprintf(self::PLACEHOLDER_FORMAT, count($preserved));
+                $preserved[$key] = $matches[0];
+
+                return $key;
+            },
+            $value
+        );
+
+        return [$value, $preserved];
     }
 }

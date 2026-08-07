@@ -137,6 +137,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Preserve Whitespace Tags
+    |--------------------------------------------------------------------------
+    |
+    | Tags whose content must be left untouched by the whitespace collapsing.
+    | Inside <textarea> and <pre> the line breaks carry meaning: collapsing
+    | them changes the value the user reads and submits back. Set to an empty
+    | array to restore the previous behaviour.
+    |
+    | Default: ['textarea', 'pre']
+    |
+    */
+
+    'preserve_whitespace_tags' => ['textarea', 'pre'],
+
+    /*
+    |--------------------------------------------------------------------------
     | Ignore Routes
     |--------------------------------------------------------------------------
     |

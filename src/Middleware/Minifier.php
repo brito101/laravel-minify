@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 abstract class Minifier
 {
     protected static $dom;
+    protected static $currentRequest;
     protected static $minifyCssHasBeenUsed = false;
     protected static $minifyJavascriptHasBeenUsed = false;
 
@@ -35,6 +36,8 @@ abstract class Minifier
     {
         $response = $next($request);
 
+        $this->forgetStateOfPreviousRequest($request);
+
         if (!$this->shouldProcessMinify($request, $response)) {
             if (!(static::$dom instanceof DOMDocument)) {
                 return $response;
@@ -48,6 +51,35 @@ abstract class Minifier
         $this->loadDom($html);
 
         return $response->setContent($this->apply());
+    }
+
+    /**
+     * The three middlewares of this package share the DOM and the usage flags
+     * through static properties, which is intentional: they all work on the
+     * same response. Nothing ever cleared them though, and under a long lived
+     * worker (Octane, Swoole, RoadRunner) the statics outlive the request, so
+     * loadDom() short circuits and the next request is served the previous
+     * request's HTML.
+     *
+     * All middlewares of one request receive the very same Request instance,
+     * so identity against it tells a new request from the current one. The
+     * reference is weak to avoid holding the finished request in memory, and
+     * comparing the object rather than spl_object_id() avoids the false match
+     * an id reused after garbage collection would cause.
+     *
+     * @param \Illuminate\Http\Request $request
+     */
+    protected function forgetStateOfPreviousRequest($request): void
+    {
+        if (static::$currentRequest instanceof \WeakReference
+            && static::$currentRequest->get() === $request) {
+            return;
+        }
+
+        static::$currentRequest = \WeakReference::create($request);
+        static::$dom = null;
+        static::$minifyCssHasBeenUsed = false;
+        static::$minifyJavascriptHasBeenUsed = false;
     }
 
     protected function replaceDirectives($html): string
